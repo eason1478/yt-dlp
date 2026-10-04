@@ -163,7 +163,7 @@ class IqiyiIE(InfoExtractor):
         download_info = self._download_json(
             'https://mesh.if.iqiyi.com/player/lw/lwplay/accelerator.js',
             'm3u8_info',
-            query=params, headers={'Cookie': ''}, #Disable cookie, or the response won't contain m3u8 content
+            query=params, headers={'Cookie': ''},  # Disable cookie, or the response won't contain m3u8 content
         )
         ev = download_info.get('ev')
         if not ev:
