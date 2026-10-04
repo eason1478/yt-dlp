@@ -45,7 +45,7 @@ class RacingTVIE(InfoExtractor):
             f'https://api.racingtv.com/member/watch/on-demand/catchup/episodes/{video_id}',
             video_id,
             headers=headers,
-            query={ 'preroll_token': token },
+            query={'preroll_token': token},
             expected_status=402,
         )
         m3u8_url = traverse_obj(play_info, ('player', 'sources', 0, 'url'))
