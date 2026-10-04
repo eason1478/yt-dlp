@@ -9,8 +9,6 @@ from .common import InfoExtractor
 from .openload import PhantomJSwrapper
 from ..utils import (
     ExtractorError,
-    clean_html,
-    decode_packed_codes,
     float_or_none,
     format_field,
     int_or_none,
@@ -147,7 +145,7 @@ class IqiyiIE(InfoExtractor):
     def _real_extract(self, url):
         js = self._download_webpage(
             'https://mesh.if.iqiyi.com/player/lw/lwplay/accelerator.js?apiVer=3',
-            'temp_id_js',
+            'js_code',
             headers={'Referer': url},
         )
         tvid = self._search_regex(r'"tvid":(\d+)', js, 'tvid')
@@ -163,18 +161,19 @@ class IqiyiIE(InfoExtractor):
         }
 
         download_info = self._download_json(
-            'https://mesh.if.iqiyi.com/player/lw/lwplay/accelerator.js', 'temp_id_json', query=params)
+            'https://mesh.if.iqiyi.com/player/lw/lwplay/accelerator.js',
+            'm3u8_info',
+            query=params, headers={'Cookie': ''}, #Disable cookie, or the response won't contain m3u8 content
+        )
         ev = download_info.get('ev')
         if not ev:
             raise ExtractorError('No ev data in response')
 
-        # Decode
         try:
             decoded = ''.join(chr(ord(c) ^ 90) for c in ev)
             ev_data = self._parse_json(decoded, 'ev json')
         except Exception as e:
             raise ExtractorError('Failed to decode ev: ' + str(e))
-
         m3u8_content = traverse_obj(ev_data, ('data', 'program', 'video', 2, 'm3u8'))
         m3u8_base64 = base64.b64encode(m3u8_content.encode('utf-8')).decode('ascii')
         m3u8_data_url = f'data:application/vnd.apple.mpegurl;base64,{m3u8_base64}'
